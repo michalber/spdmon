@@ -7,7 +7,7 @@ Main idea and algorithm is based on @epruesse [SINA's progress monitor](https://
 
 ## Usage
 ```cpp
-progress::LoggerProgress monitor("Progress logger", count);
+spdmon::LoggerProgress monitor("Progress logger", count);
 for (int i = 0; i < count; i++)
   ++monitor;
 ```
@@ -25,7 +25,7 @@ sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
 sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("logfile", true));
 auto combined_logger = std::make_shared<spdlog::logger>("name", begin(sinks), end(sinks));
 
-progress::LoggerProgress monitor(combined_logger, "Progress", 40);
+spdmon::LoggerProgress monitor(combined_logger, "Progress", 40);
 ```
 
 ## Main features of LoggerProgress:
@@ -71,6 +71,7 @@ Below are some benchmarks done in Ubuntu 64 bit, Intel i5-8250U CPU @ 3.4GHz. I 
 #include <future>
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdmon/spdmon.hpp"
 
 int main()
 {
@@ -87,7 +88,7 @@ int main()
    * Instead of them it creates custom one, logging to stdout with progress bar
    * and makes it global default logger.
   */
-  progress::LoggerProgress monitor(combined_logger, "Progress", 40);
+  spdmon::LoggerProgress monitor(combined_logger, "Progress", 40);
 
   /* We can get newly created logger from progress logger to log new data */
   auto new_logger = monitor.GetLogger();
