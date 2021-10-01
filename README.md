@@ -138,3 +138,6 @@ int main()
   return 0;
 }
 ```
+
+## Authors
+Huge thank you to [Elmar Pruesse](https://github.com/epruesse) for the idea and starting this project!
