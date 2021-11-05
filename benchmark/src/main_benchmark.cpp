@@ -701,14 +701,14 @@ namespace spdmon
                 last_update_ = now;
 
                 fmt::memory_buffer buf;
-                Basespdmon::RenderProgress(now, 60, buf);
+                BaseProgress::RenderProgress(now, 60, buf);
                 StatusLine::SendLogMsg(buf);
             }
         }
 
         void RenderStatusLine(fmt::memory_buffer &buf, unsigned int width) final
         {
-            Basespdmon::RenderProgress(clock_t::now(), width, buf);
+            BaseProgress::RenderProgress(clock_t::now(), width, buf);
         }
 
         std::shared_ptr<spdlog::logger> GetLogger()
@@ -734,7 +734,6 @@ namespace spdmon
 #endif
 
 #include "utils.hpp"
-#include "ProgressBar.hpp"
 
 #include <atomic>
 #include <cstdlib> // EXIT_FAILURE
@@ -847,52 +846,6 @@ void bench_threaded_logging(size_t threads, int iters)
             fmt::format(std::locale("en_US.UTF-8"), "{:<30} Elapsed: {:0.2f} secs {:>16L}/sec", log->name(), delta_d, int(howmany / delta_d)));
         spdlog::drop(log->name());
     }
-    {
-        auto custom_logger = sina::stdout_terminal_mt("Old Logger");
-        auto default_logger = spdlog::default_logger();
-        sina::logger_progress monitor(custom_logger, "Old progress", iters);
-        bench_mt(iters, std::move(custom_logger), threads);
-    }
-    {
-        auto custom_logger = sina::stdout_terminal_mt("Old Logger");
-        auto default_logger = spdlog::default_logger();
-        sina::logger_progress monitor(custom_logger, "Old progress", iters);
-        spdlog::set_default_logger(custom_logger);
-        custom_logger->set_pattern("[thread %t] %+");
-
-        auto log = custom_logger;
-        int howmany = iters;
-        int thread_count = threads;
-
-        using std::chrono::duration;
-        using std::chrono::duration_cast;
-        using std::chrono::high_resolution_clock;
-
-        std::vector<std::thread> threads;
-        threads.reserve(thread_count);
-        auto start = high_resolution_clock::now();
-        for (size_t t = 0; t < thread_count; ++t)
-        {
-            threads.emplace_back([&]() {
-                for (int j = 0; j < howmany / static_cast<int>(thread_count); j++)
-                {
-                    log->info("Hello logger: msg number {}", j);
-                    ++monitor;
-                }
-            });
-        }
-
-        for (auto &t : threads)
-        {
-            t.join();
-        };
-
-        auto delta = high_resolution_clock::now() - start;
-        auto delta_d = duration_cast<duration<double>>(delta).count();
-        spdlog::info(
-            fmt::format(std::locale("en_US.UTF-8"), "{:<30} Elapsed: {:0.2f} secs {:>16L}/sec", log->name(), delta_d, int(howmany / delta_d)));
-        spdlog::drop(log->name());
-    }
 }
 
 void bench_single_threaded(int iters)
@@ -914,40 +867,6 @@ void bench_single_threaded(int iters)
     {
         spdmon::LoggerProgress monitor("Progress", iters);
         auto log = monitor.GetLogger();
-        int howmany = iters;
-
-        using std::chrono::duration;
-        using std::chrono::duration_cast;
-        using std::chrono::high_resolution_clock;
-
-        auto start = high_resolution_clock::now();
-        for (auto i = 0; i < howmany; ++i)
-        {
-            log->info("Hello logger: msg number {}", i);
-            ++monitor;
-        }
-
-        auto delta = high_resolution_clock::now() - start;
-        auto delta_d = duration_cast<duration<double>>(delta).count();
-
-        spdlog::info(
-            fmt::format(std::locale("en_US.UTF-8"), "{:<30} Elapsed: {:0.2f} secs {:>16L}/sec", log->name(), delta_d, int(howmany / delta_d)));
-        spdlog::drop(log->name());
-    }
-    {
-        auto custom_logger = sina::stdout_terminal_mt("Old Logger");
-        auto default_logger = spdlog::default_logger();
-        sina::logger_progress monitor(custom_logger, "Old progress", iters);
-        bench(iters, std::move(custom_logger));
-    }
-    {
-        auto custom_logger = sina::stdout_terminal_mt("Old Logger");
-        auto default_logger = spdlog::default_logger();
-        sina::logger_progress monitor(custom_logger, "Old progress", iters);
-        spdlog::set_default_logger(custom_logger);
-        custom_logger->set_pattern("[thread %t] %+");
-
-        auto log = custom_logger;
         int howmany = iters;
 
         using std::chrono::duration;

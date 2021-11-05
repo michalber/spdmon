@@ -1,15 +1,18 @@
 # spdmon
-Progress monitor based on spdlog library. In just two lines of code visualize your loop progress!
+Progress monitor based on spdlog library. In just one function call visualize your loop progress!
 <br>
 It is simple, header-only library. Just copy `spdmon.hpp` file into you project and you are ready to go.
 <br>
-Main idea and algorithm is based on @epruesse [SINA's progress monitor](https://github.com/gabime/spdlog/issues/854).
+Main idea and algorithm is based on @epruesse [progress monitor](https://github.com/gabime/spdlog/issues/854).
 
 ## Usage
 ```cpp
-spdmon::LoggerProgress monitor("Progress logger", count);
-for (int i = 0; i < count; i++)
-  ++monitor;
+std::vector<int> vec {0,1,2,3,4,5,6,7,8,9};
+for(auto [logger, val] : spdmon::LogProgress(vec))
+{
+    logger->info("Hi info");
+    std::this_thread::sleep_for(500ms);
+}
 ```
 ```
 Progress logger: 100% |████████████████████████████| 250000/250000 [00:00:33 / 00:00:00]
@@ -34,12 +37,11 @@ spdmon::LoggerProgress monitor(combined_logger, "Progress", 40);
 * Works with latest spdlog library
 * Refactor code with Google C++ Style Guide
 * Works only with `stdout`
-> Compared to @epruesse SINA's progress monitor
 * It is not using `std::recursive_mutex`
 * It does not require any modification of spdlog library. Logging sink is based on `spdlog::sinks::ansicolor_sink`
 
 ## Benchmarks
-Below are some benchmarks done in Ubuntu 64 bit, Intel i5-8250U CPU @ 3.4GHz. I have compared progress monitor to native `spdlog::sinks::ansicolor_sink` and @epruesse SINA's progress monitor. Used [spdlog benchmark code](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp).
+Below are some benchmarks done in Ubuntu 64 bit, Intel i5-8250U CPU @ 3.4GHz. I have compared progress monitor to native `spdlog::sinks::ansicolor_sink`. Used [spdlog benchmark code](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp).
 
 ### Synchronous mode
 ```
@@ -49,16 +51,12 @@ Below are some benchmarks done in Ubuntu 64 bit, Intel i5-8250U CPU @ 3.4GHz. I 
 [spdlog::ansicolor_stdout_sink_mt]  [info]                Elapsed: 6.93 secs            36,083/sec
 [Progress logger]                   [info]                Elapsed: 19.55 secs           12,788/sec
 [Progress logger + monitor]         [info]                Elapsed: 27.51 secs            9,086/sec
-[SINA's Logger]                     [info]                Elapsed: 23.15 secs           10,797/sec
-[SINA's Logger + monitor]           [info]                Elapsed: 31.59 secs            7,915/sec
 [info] **************************************************************
 [info] 10 threads, competing over the same logger object, 250,000 iterations
 [info] **************************************************************
 [spdlog::ansicolor_stdout_sink_mt]  [info]                Elapsed: 7.00 secs            35,703/sec
 [Progress logger]                   [info]                Elapsed: 21.73 secs           11,507/sec
 [Progress logger + monitor]         [info]                Elapsed: 29.70 secs            8,416/sec
-[SINA's Logger]                     [info]                Elapsed: 22.22 secs           11,251/sec
-[SINA's Logger]                     [info]                Elapsed: 33.18 secs            7,535/sec
 ```
 
 ## Example usage

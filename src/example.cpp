@@ -8,7 +8,19 @@
 #include "spdlog/sinks/stdout_sinks.h"
 #include "spdmon/spdmon.hpp"
 
+using namespace std::chrono_literals;
+
 int main() {
+    /*
+     * The shortest way to use Progress Monitor. Works with every iterable container
+    */
+    std::vector<int> vec {0,1,2,3,4,5,6,7,8,9};
+    for(auto [logger, val] : spdmon::LogProgress(vec))
+    {
+        logger->info("Hi info");
+        std::this_thread::sleep_for(500ms);
+    }
+
     /*
      * Create logger with many sinks. It can include stdout sinks
      */
@@ -46,8 +58,6 @@ int main() {
             std::this_thread::sleep_for(duration);
         }
     };
-
-    using namespace std::chrono_literals;
 
     /*
      * Create few threads which will be logging data through progress logger

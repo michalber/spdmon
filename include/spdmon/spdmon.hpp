@@ -730,4 +730,56 @@ namespace spdmon
         std::shared_ptr<spdlog::logger> default_logger_{nullptr};
         std::shared_ptr<spdlog::logger> custom_logger_{nullptr};
     };
+
+
+
+    template<typename Iterable>
+    class IterableProgressMonitor
+    {
+    private:
+        std::shared_ptr<LoggerProgress> progress_logger_;
+        Iterable iter_;
+        std::size_t size_;
+        decltype(std::begin(iter_)) begin_;
+        const decltype(std::end(iter_)) end_;
+
+    public:
+        IterableProgressMonitor(Iterable iter):
+            iter_(iter),
+            size_(0),
+            begin_(std::begin(iter)),
+            end_(std::end(iter))
+        {
+            progress_logger_ = std::make_shared<LoggerProgress>("Progress logger", end_ - begin_);
+        }
+
+        const IterableProgressMonitor& begin() const { return *this; }
+
+        const IterableProgressMonitor& end()   const { return *this; }
+
+        bool operator!=(const IterableProgressMonitor&) const
+        {
+            return begin_ != end_;
+        }
+
+        void operator++()
+        {
+            ++(*progress_logger_);
+            ++begin_;
+            ++size_;
+        }
+
+        auto operator*() const
+            -> std::pair<std::shared_ptr<spdlog::logger>, decltype(*begin_)>
+        {
+            return { progress_logger_->GetLogger(), *begin_ };
+        }
+    };
+
+    template<typename Iterable>
+    auto LogProgress(Iterable&& iter)
+        -> IterableProgressMonitor<Iterable>
+    {
+        return { std::forward<Iterable>(iter) };
+    }
 } // namespace spdmon
