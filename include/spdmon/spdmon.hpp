@@ -750,7 +750,7 @@ namespace spdmon
             begin_(std::begin(iter)),
             end_(std::end(iter))
         {
-            progress_logger_ = std::make_shared<LoggerProgress>("Progress logger", end_ - begin_);
+            progress_logger_ = std::make_shared<LoggerProgress>("Progress logger", std::distance(begin_, end_));
         }
 
         const IterableProgressMonitor& begin() const { return *this; }
